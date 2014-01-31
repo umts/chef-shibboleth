@@ -1,0 +1,5 @@
+tmp/
+.bundle/
+.kitchen/
+.librarian/
+.kitchen.local.yml

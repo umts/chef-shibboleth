@@ -1,0 +1,14 @@
+AllCops:
+  Includes:
+    - Rakefile
+  Excludes:
+    - tmp/**
+    - .bundle/**
+    - .kitchen/**
+    - .librarian/**
+    - vendor/**
+
+Encoding:
+  Enabled: false
+LineLength:
+  Enabled: false
