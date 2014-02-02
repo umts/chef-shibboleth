@@ -6,5 +6,7 @@ site 'http://community.opscode.com/api/v1'
 cookbook 'shibboleth',
          path: '.'
 
+cookbook 'apache2'
+cookbook 'yum'
 # cookbook 'shibboleth-test',
 #          path: 'test/cookbooks/shibboleth-test'

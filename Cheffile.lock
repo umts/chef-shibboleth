@@ -1,0 +1,17 @@
+SITE
+  remote: http://community.opscode.com/api/v1
+  specs:
+    apache2 (1.8.14)
+    yum (3.0.6)
+
+PATH
+  remote: .
+  specs:
+    shibboleth (0.0.2)
+      apache2 (>= 0.0.0)
+
+DEPENDENCIES
+  apache2 (>= 0)
+  shibboleth (>= 0)
+  yum (>= 0)
+
