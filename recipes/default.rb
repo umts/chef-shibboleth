@@ -31,9 +31,9 @@ if platform_family?('rhel')
 
     platform_dirs = {
       'centos' => { '5' => 'CentOS_5/',
-                    '6' => 'CentOS_CentOS-6/'},
+                    '6' => 'CentOS_CentOS-6/' },
       'rhel'   => { '5' => 'RHEL_5/',
-                    '6' => 'RHEL_6/'}
+                    '6' => 'RHEL_6/' }
     }
 
     base = 'http://download.opensuse.org/repositories/security:/shibboleth/' +
@@ -54,8 +54,8 @@ else
   package 'libapache2-mod-shib2'
 end
 
-service "shibd" do
-  supports :restart => true
+service 'shibd' do
+  supports restart: true
   action [:enable, :start]
 end
 
@@ -63,7 +63,7 @@ execute 'shib-keygen' do
   cwd '/etc/shibboleth'
   creates '/etc/shibboleth/sp-cert.pem'
   command "shib-keygen -f -h #{node['fqdn']} -e #{node['fqdn']}/shibboleth && chmod 644 /etc/shibboleth/sp-key.pem"
-  notifies :run, "execute[shib-metagen]", :immediately
+  notifies :run, 'execute[shib-metagen]', :immediately
   notifies :restart, 'service[shibd]'
 end
 
@@ -85,7 +85,7 @@ template '/etc/shibboleth/shibboleth2.xml' do
   source 'shibboleth2.xml.erb'
   mode '0644'
   variables(
-    :idp_url => "#{node['shibboleth']['idp']}/idp/shibboleth"
+    idp_url: "#{node['shibboleth']['idp']}/idp/shibboleth"
   )
   notifies :restart, 'service[shibd]'
 end
@@ -101,9 +101,13 @@ ruby_block 'build-attribute-map' do
 
     tail = "</Attributes>\n"
 
-    content = (head + ::Dir.glob('/etc/shibboleth/attributes.d/*.xml').map { |file| ::File.read(file) }.join + tail)
+    content = (head +
+               ::Dir.glob('/etc/shibboleth/attributes.d/*.xml')
+                    .map { |file| ::File.read(file) }
+                    .join +
+               tail)
 
-    ::File.open("/etc/shibboleth/attribute-map.xml", "w", 0644) { |f| f.write(content) }
+    ::File.open('/etc/shibboleth/attribute-map.xml', 'w', 0644) { |f| f.write(content) }
   end
 
   action :nothing
@@ -116,8 +120,8 @@ remote_directory '/etc/shibboleth/attributes.d' do
   notifies :create, 'ruby_block[build-attribute-map]'
 end
 
-shib_module_path = value_for_platform(['rhel', 'centos'] => {'default' => '/usr/lib64/shibboleth/mod_shib_22.so'},
-                                 'ubuntu' => {'default' => '/usr/lib/apache2/modules/mod_shib_22.so'})
+shib_module_path = value_for_platform(%w{rhel centos} => { 'default' => '/usr/lib64/shibboleth/mod_shib_22.so' },
+                                      'ubuntu'        => { 'default' => '/usr/lib/apache2/modules/mod_shib_22.so' })
 
 apache_module 'shib2' do
   identifier 'mod_shib'

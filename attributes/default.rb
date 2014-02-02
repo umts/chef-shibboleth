@@ -1,7 +1,7 @@
-default['shibboleth']['idp'] = "https://idp.testshib.org"
-default['shibboleth']['remote_user'] = "eppn persistent-id targeted-id"
+default['shibboleth']['idp'] = 'https://idp.testshib.org'
+default['shibboleth']['remote_user'] = 'eppn persistent-id targeted-id'
 
-default['shibboleth']['sessions']['lifetime'] = 28800
+default['shibboleth']['sessions']['lifetime'] = 28_800
 default['shibboleth']['sessions']['timeout'] = 3600
 default['shibboleth']['sessions']['check_address'] = false
 default['shibboleth']['sessions']['handler_ssl'] = true
