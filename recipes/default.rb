@@ -26,7 +26,7 @@
 include_recipe 'apache2'
 
 if platform_family?('rhel')
-  yum_repository'shibboleth' do
+  yum_repository 'shibboleth' do
     description 'Shibboleth package repository'
 
     platform_dirs = {
@@ -37,7 +37,7 @@ if platform_family?('rhel')
     }
 
     base = 'http://download.opensuse.org/repositories/security:/shibboleth/' +
-      platform_dirs[node['platform']][node['platform_version'].split('.').first]
+           platform_dirs[node['platform']][node['platform_version'].split('.').first]
 
     baseurl base
     gpgkey "#{base}repodata/repomd.xml.key"
@@ -120,7 +120,7 @@ remote_directory '/etc/shibboleth/attributes.d' do
   notifies :create, 'ruby_block[build-attribute-map]'
 end
 
-shib_module_path = value_for_platform(%w{rhel centos} => { 'default' => '/usr/lib64/shibboleth/mod_shib_22.so' },
+shib_module_path = value_for_platform(%w(rhel centos) => { 'default' => '/usr/lib64/shibboleth/mod_shib_22.so' },
                                       'ubuntu'        => { 'default' => '/usr/lib/apache2/modules/mod_shib_22.so' })
 
 apache_module 'shib2' do
