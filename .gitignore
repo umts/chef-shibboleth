@@ -1,5 +1,16 @@
-tmp/
-.bundle/
+.vagrant
+Berksfile.lock
+*~
+*#
+.#*
+\#*#
+.*.sw[a-z]
+*.un~
+
+# Bundler
+Gemfile.lock
+bin/*
+.bundle/*
+
 .kitchen/
-.librarian/
 .kitchen.local.yml
