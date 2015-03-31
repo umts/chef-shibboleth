@@ -23,36 +23,15 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-include_recipe 'apache2'
-
 if platform_family?('rhel')
-  yum_repository 'shibboleth' do
-    description 'Shibboleth package repository'
-
-    platform_dirs = {
-      'centos' => { '5' => 'CentOS_5/',
-                    '6' => 'CentOS_CentOS-6/' },
-      'rhel'   => { '5' => 'RHEL_5/',
-                    '6' => 'RHEL_6/' }
-    }
-
-    base = 'http://download.opensuse.org/repositories/security:/shibboleth/' +
-           platform_dirs[node['platform']][node['platform_version'].split('.').first]
-
-    baseurl base
-    gpgkey "#{base}repodata/repomd.xml.key"
-    action :create
-  end
-
-  package 'shibboleth'
+  include_recipe 'shibboleth::yum_repo'
 
   file '/etc/httpd/conf.d/shib.conf' do
     action :delete
   end
-
-else
-  package 'libapache2-mod-shib2'
 end
+
+package node['shibboleth']['package']
 
 service 'shibd' do
   supports restart: true
@@ -62,8 +41,9 @@ end
 execute 'shib-keygen' do
   cwd '/etc/shibboleth'
   creates '/etc/shibboleth/sp-cert.pem'
-  command "shib-keygen -f -h #{node['fqdn']} -e #{node['fqdn']}/shibboleth && chmod 644 /etc/shibboleth/sp-key.pem"
+  command "shib-keygen -f -h #{node['fqdn']} -e #{node['fqdn']}/shibboleth"
   notifies :run, 'execute[shib-metagen]', :immediately
+  notifies :create, 'file[/etc/shibboleth/sp-key.pem]'
   notifies :restart, 'service[shibd]'
 end
 
@@ -75,6 +55,12 @@ execute 'shib-metagen' do
   notifies :restart, 'service[shibd]'
 end
 
+file '/etc/shibboleth/sp-key.pem' do
+  user 'root'
+  group 'root'
+  mode '0644'
+end
+
 remote_file '/etc/shibboleth/idp-metadata.xml' do
   source "#{node['shibboleth']['idp']}/idp/profile/Metadata/SAML"
   mode '0644'
@@ -84,9 +70,7 @@ end
 template '/etc/shibboleth/shibboleth2.xml' do
   source 'shibboleth2.xml.erb'
   mode '0644'
-  variables(
-    idp_url: "#{node['shibboleth']['idp']}/idp/shibboleth"
-  )
+  variables( idp_url: "#{node['shibboleth']['idp']}/idp/shibboleth")
   notifies :restart, 'service[shibd]'
 end
 
@@ -120,10 +104,7 @@ remote_directory '/etc/shibboleth/attributes.d' do
   notifies :create, 'ruby_block[build-attribute-map]'
 end
 
-shib_module_path = value_for_platform(%w(rhel centos) => { 'default' => '/usr/lib64/shibboleth/mod_shib_22.so' },
-                                      'ubuntu'        => { 'default' => '/usr/lib/apache2/modules/mod_shib_22.so' })
-
 apache_module 'shib2' do
   identifier 'mod_shib'
-  module_path shib_module_path
+  module_path node['shibboleth']['module_path']
 end
